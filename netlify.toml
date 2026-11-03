@@ -1,0 +1,8 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+# Local `netlify deploy --build` builds into .next too; stop `npm run dev` first or the dev server breaks.
+
+[build.environment]
+  NODE_VERSION = "22"
