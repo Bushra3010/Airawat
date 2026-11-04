@@ -10,7 +10,7 @@ export const BUSINESS = {
   phoneHref: "tel:+919822997011",
   whatsappHref: "https://wa.me/919822997011",
   email: "airawathandicraft@gmail.com",
-  website: "https://www.airawathandicraft.com",
+  website: "https://airawathandicraft.com",
   address: {
     lines: ["Sr no 116/2A, near KFC", "opp. Icon Tower, Baner", "Pune, Maharashtra 411045"],
     oneLine: "Sr no 116/2A, near KFC, opp. Icon Tower, Baner, Pune, Maharashtra 411045",

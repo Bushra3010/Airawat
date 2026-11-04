@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Toast } from "@/components/ui";
 import WhatsAppSticky from "@/components/WhatsAppSticky";
+import SignupOffer from "@/components/SignupOffer";
 import { getCategories } from "@/lib/db";
 
 export default async function ShopLayout({ children }: { children: React.ReactNode }) {
@@ -14,6 +15,7 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
       <Footer categories={categories} />
       <Toast />
       <WhatsAppSticky />
+      <SignupOffer />
     </>
   );
 }

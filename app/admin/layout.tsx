@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ExternalLink, FolderTree, LayoutDashboard, LogOut, Menu, MessageSquareText, Package, ShoppingCart, TicketPercent, X } from "lucide-react";
+import { ExternalLink, FolderTree, LayoutDashboard, LogOut, Menu, MessageSquareText, Package, ShoppingCart, TicketPercent, Users, X } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useAdminGate } from "@/lib/admin";
 import { Skeleton } from "@/components/admin/ui";
@@ -14,6 +14,7 @@ const NAV = [
   { href: "/admin/categories", label: "Categories", icon: FolderTree },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/coupons", label: "Coupons", icon: TicketPercent },
+  { href: "/admin/signups", label: "Sign-ups", icon: Users },
   { href: "/admin/reviews", label: "Reviews", icon: MessageSquareText },
 ];
 

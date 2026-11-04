@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Heart, Menu, MapPin, Phone, Search, ShoppingBag, Truck, User, X } from "lucide-react";
+import { Heart, Menu, MapPin, Phone, ShoppingBag, Truck, User, X } from "lucide-react";
+import SearchBox, { resetSearch } from "@/components/SearchBox";
 import type { Category } from "@/lib/catalog";
 import { useStore } from "@/lib/store";
 import { displayName, useAuth } from "@/lib/auth";
@@ -12,7 +13,15 @@ import { BUSINESS } from "@/lib/business";
 
 export function Logo({ className = "", onDark = false }: { className?: string; onDark?: boolean }) {
   return (
-    <Link href="/" className={`flex items-center gap-2 ${className}`} aria-label="Airawat Handicraft home">
+    <Link
+      href="/"
+      onClick={() => {
+        resetSearch();
+        if (window.location.pathname === "/") window.scrollTo({ top: 0, behavior: "smooth" });
+      }}
+      className={`flex items-center gap-2 ${className}`}
+      aria-label="Airawat Handicraft home"
+    >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/brand/logo-mark.png" alt="" width={159} height={193} className="h-10 w-auto md:h-11" />
       <span className={`flex flex-col font-[Arial,Helvetica,sans-serif] text-[15px] font-bold uppercase leading-[1.05] tracking-wide md:text-[17px] ${onDark ? "text-white" : "text-brand"}`}>
@@ -20,35 +29,6 @@ export function Logo({ className = "", onDark = false }: { className?: string; o
         <span>Handicraft</span>
       </span>
     </Link>
-  );
-}
-
-function SearchBox({ onDone }: { onDone?: () => void }) {
-  const router = useRouter();
-  const [q, setQ] = useState("");
-  return (
-    <form
-      role="search"
-      className="relative w-full"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!q.trim()) return;
-        router.push(`/search?q=${encodeURIComponent(q.trim())}`);
-        onDone?.();
-      }}
-    >
-      <label htmlFor="site-search" className="sr-only">Search furniture</label>
-      <input
-        id="site-search"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="Search sofas, beds, teak, velvet…"
-        className="h-11 w-full rounded-full border border-border bg-surface-alt/60 pl-5 pr-12 text-sm placeholder:text-muted focus:border-accent focus:bg-surface focus:outline-none"
-      />
-      <button type="submit" aria-label="Search" className="absolute right-1 top-1 grid h-9 w-9 place-items-center rounded-full bg-accent text-on-accent hover:bg-accent-hover">
-        <Search size={16} />
-      </button>
-    </form>
   );
 }
 
@@ -109,7 +89,7 @@ export default function Header({ categories }: { categories: Category[] }) {
           {categories.map((c) => (
             <li key={c.slug}><Link href={`/c/${c.slug}`} className="py-3 text-ink/85 hover:text-accent">{c.name}</Link></li>
           ))}
-          <li className="ml-auto"><Link href="/c/sofas?deal=1" className="font-medium text-sale">Festive Sale</Link></li>
+          <li className="ml-auto"><Link href="/sale" className="font-medium text-sale">Festive Sale</Link></li>
         </ul>
       </nav>
 
@@ -158,7 +138,7 @@ function MobileMenu({ categories, signedIn, onClose }: { categories: Category[];
               </Link>
             </li>
           ))}
-          <li><Link href="/c/sofas?deal=1" onClick={onClose} className="block py-3 font-medium text-sale">Festive Sale</Link></li>
+          <li><Link href="/sale" onClick={onClose} className="block py-3 font-medium text-sale">Festive Sale</Link></li>
         </ul>
         <ul className="mt-4 space-y-1 border-t border-border pt-4 text-sm">
           <li><Link href={signedIn ? "/account" : "/login"} onClick={onClose} className="flex items-center gap-3 py-2"><User size={18} className="text-brass" />{signedIn ? "Your account" : "Sign in"}</Link></li>

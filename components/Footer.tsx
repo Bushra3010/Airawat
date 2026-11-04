@@ -4,7 +4,7 @@ import type { Category } from "@/lib/catalog";
 import { BUSINESS } from "@/lib/business";
 import SocialLinks from "@/components/Social";
 
-const help = [["Track your order", "/track"], ["Returns & refunds", "/help"], ["Care guides", "/help"], ["Our showroom", "/stores"], ["About us", "/about"], ["Bulk & trade", "/trade"]];
+const help = [["Track your order", "/track"], ["Returns & refunds", "/help"], ["Care guides", "/help"], ["Our showroom", "/stores"], ["About us", "/about"], ["Bulk & trade", "/trade"], ["Privacy policy", "/privacy"], ["Terms of use", "/terms"]];
 
 export default function Footer({ categories }: { categories: Category[] }) {
   return (
@@ -42,7 +42,7 @@ export default function Footer({ categories }: { categories: Category[] }) {
             <li><a href={BUSINESS.phoneHref} className="flex gap-3 hover:text-white"><Phone size={17} className="shrink-0 text-[#e9d3a6]" />{BUSINESS.phone}</a></li>
             <li><a href={BUSINESS.whatsappHref} target="_blank" rel="noopener noreferrer" className="flex gap-3 hover:text-white"><MessageCircle size={17} className="shrink-0 text-[#e9d3a6]" />Chat on WhatsApp</a></li>
             <li><a href={`mailto:${BUSINESS.email}`} className="flex gap-3 break-all hover:text-white"><Mail size={17} className="shrink-0 text-[#e9d3a6]" />{BUSINESS.email}</a></li>
-            <li><a href={BUSINESS.website} target="_blank" rel="noopener noreferrer" className="flex gap-3 hover:text-white"><Globe size={17} className="shrink-0 text-[#e9d3a6]" />airawathandicraft.com</a></li>
+            <li><Link href="/" className="flex gap-3 hover:text-white"><Globe size={17} className="shrink-0 text-[#e9d3a6]" />airawathandicraft.com</Link></li>
           </ul>
         </address>
       </div>

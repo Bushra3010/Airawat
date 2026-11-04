@@ -7,7 +7,7 @@ import { img } from "@/lib/catalog";
 import { IMG } from "@/lib/content";
 
 const slides = [
-  { kicker: "Festive Sale", title: "Gather round,\nfor less.", text: "Up to 55% off dining sets made from solid sheesham.", cta: "Shop dining", href: "/c/dining", image: IMG.diningGreen },
+  { kicker: "Festive Sale", title: "Gather round,\nfor less.", text: "Festive prices on dining sets made from solid sheesham.", cta: "Shop the sale", href: "/sale", image: IMG.diningGreen },
   { kicker: "New in velvet", title: "Sink into\nsomething deep.", text: "The Nila sofa, now in forest, ink and rust.", cta: "Shop sofas", href: "/c/sofas", image: IMG.tealSofa },
   { kicker: "Bedroom edit", title: "Storage you\nwon't see.", text: "Hydraulic and drawer beds, delivered assembled.", cta: "Shop beds", href: "/c/beds", image: IMG.bedroomTufted },
 ];

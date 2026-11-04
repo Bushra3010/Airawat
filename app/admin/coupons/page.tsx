@@ -10,7 +10,7 @@ import { Badge, Button, Card, Field, Notice, PageHeader, Skeleton, inputCls } fr
 type Coupon = {
   id: string; code: string; description: string; kind: "percent" | "flat"; value: number;
   min_order_paise: number; max_discount_paise: number | null; starts_at: string | null; ends_at: string | null;
-  usage_limit: number | null; used_count: number; active: boolean; created_at: string;
+  usage_limit: number | null; used_count: number; active: boolean; created_at: string; signup_offer: boolean;
 };
 
 // No 0/O or 1/I so codes are easy to read out over the phone.
@@ -87,6 +87,20 @@ export default function CouponsPage() {
     setRows((r) => r?.map((x) => (x.id === c.id ? { ...x, active: !c.active } : x)) ?? null);
   };
 
+  // Only one coupon can be the sign-up popup's offer.
+  const setSignup = async (c: Coupon) => {
+    const sb = browserClient();
+    const on = !c.signup_offer;
+    if (on) {
+      const { error } = await sb.from("coupons").update({ signup_offer: false }).eq("signup_offer", true);
+      if (error) return setMsg({ kind: "error", text: friendlyError(error.message) });
+    }
+    const { error } = await sb.from("coupons").update({ signup_offer: on }).eq("id", c.id);
+    if (error) return setMsg({ kind: "error", text: friendlyError(error.message) });
+    setRows((r) => r?.map((x) => ({ ...x, signup_offer: x.id === c.id ? on : on ? false : x.signup_offer })) ?? null);
+    setMsg({ kind: "ok", text: on ? `${c.code} is now the sign-up popup offer.` : "The sign-up popup is off (no offer selected)." });
+  };
+
   const remove = async (c: Coupon) => {
     if (!confirm(`Delete ${c.code}? Past orders keep their discount. To stop new uses but keep the record, switch it off instead.`)) return;
     const { error } = await browserClient().from("coupons").delete().eq("id", c.id);
@@ -100,7 +114,7 @@ export default function CouponsPage() {
 
   return (
     <>
-      <PageHeader title="Coupons" sub="Create discount codes for customers to enter in their cart. Discounts apply after the buy-2 bonus." />
+      <PageHeader title="Coupons" sub="Create discount codes for customers to enter in their cart. Discounts apply after the buy-2 bonus. The coupon marked “Sign-up offer” is what the shop's pop-up gives in exchange for a mobile number; with none marked, the pop-up doesn't show." />
 
       <Card title="Create coupons" className="mb-6">
         <form onSubmit={create} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -176,8 +190,11 @@ export default function CouponsPage() {
                     <td className="px-4 py-3">{describe(c)}</td>
                     <td className="px-4 py-3 text-muted">{d(c.starts_at) || d(c.ends_at) ? `${d(c.starts_at) ?? "Now"} – ${d(c.ends_at) ?? "no end"}` : "Always"}</td>
                     <td className="px-4 py-3 tabular-nums">{c.used_count}{c.usage_limit ? ` / ${c.usage_limit}` : ""}</td>
-                    <td className="px-4 py-3"><Badge tone={st.tone}>{st.label}</Badge></td>
+                    <td className="space-x-1 px-4 py-3"><Badge tone={st.tone}>{st.label}</Badge>{c.signup_offer && <Badge tone="warn">Sign-up offer</Badge>}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-right">
+                      <Button variant={c.signup_offer ? "primary" : "ghost"} className="mr-1 h-8 px-3 text-xs" onClick={() => setSignup(c)} aria-pressed={c.signup_offer}>
+                        {c.signup_offer ? "Sign-up offer ✓" : "Use as sign-up offer"}
+                      </Button>
                       <Button variant="outline" className="h-8 px-3 text-xs" onClick={() => toggle(c)}>{c.active ? "Switch off" : "Switch on"}</Button>
                       <button onClick={() => remove(c)} aria-label={`Delete ${c.code}`} className="ml-1 rounded p-2 text-danger hover:bg-danger/10"><Trash2 size={15} /></button>
                     </td>

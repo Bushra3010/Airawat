@@ -1,19 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { formatINR, img, type Category } from "@/lib/catalog";
 import { lineTotal, useStore } from "@/lib/store";
 import { couponBase, summarise } from "@/lib/pricing";
 import { useCoupon } from "@/lib/coupons";
 import Summary from "@/components/Summary";
+import { SAVED_COUPON_KEY } from "@/components/SignupOffer";
+
+const savedCoupon = () => { try { return localStorage.getItem(SAVED_COUPON_KEY); } catch { return null; } };
+const forgetCoupon = () => { try { localStorage.removeItem(SAVED_COUPON_KEY); } catch {} };
 
 export default function CartView({ categories }: { categories: Category[] }) {
   const { ready, cart, setQty, removeLine } = useStore();
   const [code, setCode] = useState("");
   const [coupon, setCoupon] = useState<string | null>(null);
   const check = useCoupon(coupon, ready ? couponBase(cart) : 0);
+  // A code claimed from the sign-up popup applies itself.
+  useEffect(() => {
+    const saved = savedCoupon();
+    if (saved) { setCoupon(saved); setCode(saved); }
+  }, []);
 
   if (!ready) return <div className="wrap py-24" aria-busy="true"><div className="h-40 animate-pulse rounded-lg bg-surface-alt" /></div>;
 
@@ -83,7 +92,7 @@ export default function CartView({ categories }: { categories: Category[] }) {
             {coupon && (
               <p role="status" className={`mt-2 text-xs ${check.checking ? "text-muted" : check.valid ? "text-success" : "text-danger"}`}>
                 {check.checking ? "Checking…" : check.valid ? `${coupon} applied: ${check.message}` : check.message}
-                {!check.checking && <button type="button" onClick={() => { setCoupon(null); setCode(""); }} className="ml-2 underline">Remove</button>}
+                {!check.checking && <button type="button" onClick={() => { setCoupon(null); setCode(""); forgetCoupon(); }} className="ml-2 underline">Remove</button>}
               </p>
             )}
           </form>

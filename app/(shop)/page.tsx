@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { ArrowRight, Hammer, MapPin, MessageCircle, Phone, Ruler } from "lucide-react";
 import { BUSINESS } from "@/lib/business";
-import { img } from "@/lib/catalog";
+import { discount, img } from "@/lib/catalog";
 import { IMG, rooms } from "@/lib/content";
-import { bestSellers, getCategories } from "@/lib/db";
+import { allProductSlugs, bestSellers, getCategories, productsBySlugs } from "@/lib/db";
+import RoomCards from "@/components/RoomCards";
 import { Countdown } from "@/components/ui";
 import HeroCarousel from "@/components/HeroCarousel";
 import BestSellers from "@/components/BestSellers";
@@ -32,24 +33,31 @@ const TABS = [
 ];
 
 export default async function Home() {
-  const [categories, ...lists] = await Promise.all([getCategories(), ...TABS.map((t) => bestSellers(t.slug))]);
+  const [categories, allProducts, ...lists] = await Promise.all([
+    getCategories(),
+    allProductSlugs().then(productsBySlugs),
+    ...TABS.map((t) => bestSellers(t.slug)),
+  ]);
   const tabs = TABS.map((t, i) => ({ ...t, items: lists[i] }));
+  // The headline discount always matches what's actually in the shop.
+  const bestDiscount = Math.max(0, ...allProducts.map((p) => discount(p.price, p.mrp)));
   return (
     <>
       <HeroCarousel />
 
       {/* Sale strip */}
       <section className="wrap mt-4">
-        <div className="flex flex-col items-start gap-4 rounded-lg bg-sale px-5 py-4 text-white md:flex-row md:items-center md:justify-between">
+        <Link href="/sale" className="group flex flex-col items-start gap-4 rounded-lg bg-sale px-5 py-4 text-white transition hover:brightness-110 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] opacity-80">Festive Sale</p>
-            <p className="font-display text-xl">Up to 55% off, plus an extra 10% on two or more pieces</p>
+            <p className="font-display text-xl">Up to {bestDiscount}% off, plus an extra 10% on two or more pieces</p>
+            <span className="mt-1 inline-flex items-center gap-1 text-sm font-semibold underline-offset-4 group-hover:underline">Shop the sale <ArrowRight size={15} /></span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-xs uppercase tracking-wider opacity-80">Ends in</span>
             <Countdown compact />
           </div>
-        </div>
+        </Link>
       </section>
 
       {/* Categories */}
@@ -90,19 +98,7 @@ export default async function Home() {
       {/* Rooms */}
       <section className="wrap mt-16" aria-labelledby="room-h">
         <h2 id="room-h" className="mb-6 font-display text-2xl md:text-3xl">Furnish a whole room</h2>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
-          {rooms.map((r) => (
-            <Link key={r.name} href={`/c/${r.slug}`} className="group relative aspect-[3/4] overflow-hidden rounded-lg">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img(r.image, 600)} alt="" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-              <span className="absolute inset-x-0 bottom-0 flex items-end justify-between p-4 text-white">
-                <span className="font-display text-xl">{r.name}</span>
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-white/20 backdrop-blur transition group-hover:bg-white group-hover:text-ink"><ArrowRight size={16} /></span>
-              </span>
-            </Link>
-          ))}
-        </div>
+        <RoomCards rooms={rooms} products={allProducts} />
       </section>
 
       <BestSellers tabs={tabs} />
