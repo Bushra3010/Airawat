@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LogOut, Package } from "lucide-react";
+import { ExternalLink, LogOut, Package, Truck } from "lucide-react";
 import { formatINR, img } from "@/lib/catalog";
 import { displayName, useAuth } from "@/lib/auth";
 import { browserClient } from "@/lib/supabase-browser";
+import { trackingUrl } from "@/lib/tracking";
 
 type OrderRow = {
   code: string;
@@ -14,6 +15,8 @@ type OrderRow = {
   total_paise: number;
   payment_method: string;
   created_at: string;
+  awb: string | null;
+  courier: string | null;
   order_lines: { product_name: string; image: string; qty: number }[];
 };
 
@@ -36,7 +39,7 @@ export default function AccountPage() {
     let live = true;
     browserClient()
       .from("orders")
-      .select("code, status, total_paise, payment_method, created_at, order_lines(product_name, image, qty)")
+      .select("code, status, total_paise, payment_method, created_at, awb, courier, order_lines(product_name, image, qty)")
       .order("created_at", { ascending: false })
       .then(({ data, error }) => {
         if (!live) return;
@@ -89,8 +92,8 @@ export default function AccountPage() {
       ) : (
         <ul className="mt-4 space-y-3">
           {orders.map((o) => (
-            <li key={o.code}>
-              <Link href={`/order/${o.code}`} className="flex items-center gap-4 rounded-lg border border-border bg-surface p-4 hover:border-ink">
+            <li key={o.code} className="overflow-hidden rounded-lg border border-border bg-surface has-[a:hover]:border-ink">
+              <Link href={`/order/${o.code}`} className="flex items-center gap-4 p-4">
                 <div className="flex -space-x-3">
                   {o.order_lines.slice(0, 3).map((l, i) => (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -105,9 +108,27 @@ export default function AccountPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold tabular-nums">{formatINR(o.total_paise / 100)}</p>
-                  <p className="text-xs text-success">{STATUS[o.status] ?? o.status}</p>
+                  <p className={`text-xs ${o.status === "cancelled" ? "text-danger" : "text-success"}`}>{STATUS[o.status] ?? o.status}</p>
                 </div>
               </Link>
+              {o.awb && o.status !== "cancelled" && (
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-surface-alt px-4 py-3 text-sm">
+                  <p className="flex min-w-0 items-center gap-2 text-muted">
+                    <Truck size={16} className="shrink-0 text-brass" />
+                    <span className="truncate">
+                      {o.status === "delivered" ? "Delivered by" : "Shipped with"} {o.courier || "our courier"} · AWB <span className="font-mono text-ink">{o.awb}</span>
+                    </span>
+                  </p>
+                  <a
+                    href={trackingUrl(o.awb)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-on-accent hover:opacity-90"
+                  >
+                    Track parcel <ExternalLink size={13} />
+                  </a>
+                </div>
+              )}
             </li>
           ))}
         </ul>

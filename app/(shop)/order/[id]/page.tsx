@@ -7,6 +7,7 @@ import { formatINR, img } from "@/lib/catalog";
 import { orderToken } from "@/lib/store";
 import { browserClient } from "@/lib/supabase-browser";
 import { useAuth } from "@/lib/auth";
+import { trackingUrl } from "@/lib/tracking";
 
 type OrderView = {
   code: string;
@@ -59,7 +60,7 @@ export default function OrderPage({ params }: { params: Promise<{ id: string }> 
         {order.awb ? (
           <p className="mt-3 text-sm">
             Shipped with {order.courier ?? "our courier"} · AWB <span className="font-mono">{order.awb}</span>{" "}
-            <a href={`https://shiprocket.co/tracking/${encodeURIComponent(order.awb)}`} target="_blank" rel="noopener noreferrer" className="font-semibold text-accent underline">Track your parcel</a>
+            <a href={trackingUrl(order.awb)} target="_blank" rel="noopener noreferrer" className="font-semibold text-accent underline">Track your parcel</a>
           </p>
         ) : (
           <p className="mt-1 text-sm text-muted">Expected by {eta.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}</p>

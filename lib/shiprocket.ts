@@ -138,4 +138,4 @@ export async function createShipment(s: ShipmentInput) {
   return { shiprocketOrderId: created.order_id, shipmentId: created.shipment_id, awb, courier, awbError };
 }
 
-export const trackingUrl = (awb: string) => `https://shiprocket.co/tracking/${encodeURIComponent(awb)}`;
+export { trackingUrl } from "@/lib/tracking";
