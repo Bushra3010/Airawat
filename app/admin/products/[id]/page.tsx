@@ -18,6 +18,7 @@ type Form = {
   price: number; mrp: number; ships_fast: boolean; deal: boolean; active: boolean;
   images: string[]; dims: string; summary: string;
   variants: Variant[]; sizes: Size[];
+  pkg: { l: number; b: number; h: number; w: number };
 };
 
 const blank: Form = {
@@ -25,6 +26,7 @@ const blank: Form = {
   price: 0, mrp: 0, ships_fast: false, deal: false, active: true, images: [], dims: "", summary: "",
   variants: [{ group_name: "Finish", name: "Standard", swatch: "#a8743f", delta: 0 }],
   sizes: [{ name: "Standard", delta: 0 }],
+  pkg: { l: 0, b: 0, h: 0, w: 0 },
 };
 
 export default function ProductEditor({ params }: { params: Promise<{ id: string }> }) {
@@ -58,6 +60,7 @@ export default function ProductEditor({ params }: { params: Promise<{ id: string
           images: data.images, dims: data.dims, summary: data.summary,
           variants: [...data.product_variants].sort(byPos).map((v: { group_name: string; name: string; swatch: string; delta_paise: number }) => ({ group_name: v.group_name, name: v.name, swatch: v.swatch, delta: rupees(v.delta_paise) })),
           sizes: [...data.product_sizes].sort(byPos).map((s: { name: string; delta_paise: number }) => ({ name: s.name, delta: rupees(s.delta_paise) })),
+          pkg: { l: Number(data.pkg_length_cm) || 0, b: Number(data.pkg_breadth_cm) || 0, h: Number(data.pkg_height_cm) || 0, w: Number(data.pkg_weight_kg) || 0 },
         });
       });
   }, [id, isNew]);
@@ -79,6 +82,8 @@ export default function ProductEditor({ params }: { params: Promise<{ id: string
     if (!f.sizes.length || f.sizes.some((s) => !s.name.trim())) return "Every size needs a name.";
     if (new Set(f.sizes.map((s) => s.name.trim())).size !== f.sizes.length) return "Size names must be different from each other.";
     if (f.variants.some((v) => f.price + v.delta <= 0) || f.sizes.some((s) => f.price + s.delta <= 0)) return "An option or size makes the price ₹0 or less.";
+    const box = [f.pkg.l, f.pkg.b, f.pkg.h, f.pkg.w];
+    if (box.some((n) => n < 0) || (box.some((n) => n > 0) && box.some((n) => !(n > 0)))) return "Fill in all four shipping box values, or leave them all empty.";
     return null;
   };
 
@@ -100,6 +105,14 @@ export default function ProductEditor({ params }: { params: Promise<{ id: string
     if (error) {
       setBusy(false);
       return setMsg({ kind: "error", text: friendlyError(error.message) });
+    }
+    const v = (n: number) => (n > 0 ? n : null);
+    const { error: boxErr } = await browserClient().from("products")
+      .update({ pkg_length_cm: v(f.pkg.l), pkg_breadth_cm: v(f.pkg.b), pkg_height_cm: v(f.pkg.h), pkg_weight_kg: v(f.pkg.w) })
+      .eq("id", data as string);
+    if (boxErr) {
+      setBusy(false);
+      return setMsg({ kind: "error", text: `Saved, but the shipping box size wasn't: ${friendlyError(boxErr.message)}` });
     }
     const refreshed = await refreshSite();
     setBusy(false);
@@ -249,6 +262,17 @@ export default function ProductEditor({ params }: { params: Promise<{ id: string
             {f.price > 0 && f.mrp >= f.price && (
               <p className="mt-2 text-xs text-muted">Shows as {formatINR(f.price)} <s>{formatINR(f.mrp)}</s> · {Math.round((1 - f.price / f.mrp) * 100)}% off</p>
             )}
+          </Card>
+
+          <Card title="Shipping box">
+            <p className="mb-3 text-xs text-muted">Size and weight of one piece, packed. Used to book Shiprocket couriers automatically.</p>
+            <div className="grid grid-cols-2 gap-3">
+              {([["l", "Length cm"], ["b", "Breadth cm"], ["h", "Height cm"], ["w", "Weight kg"]] as const).map(([k, label]) => (
+                <Field key={k} label={label}>
+                  <input type="number" min={0} step="0.1" value={f.pkg[k] || ""} onChange={(e) => set("pkg", { ...f.pkg, [k]: Number(e.target.value) })} className={inputCls} />
+                </Field>
+              ))}
+            </div>
           </Card>
 
           <Card title="Visibility">

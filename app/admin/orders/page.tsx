@@ -7,9 +7,11 @@ import { formatINR, img } from "@/lib/catalog";
 import { friendlyError, ORDER_STATUSES, rupees, STATUS_LABEL } from "@/lib/admin";
 import { INDIAN_STATES } from "@/lib/india";
 import { browserClient } from "@/lib/supabase-browser";
+import { trackingUrl } from "@/lib/tracking";
 import { Badge, Button, Field, Notice, PageHeader, Skeleton, inputCls } from "@/components/admin/ui";
 
-type Line = { product_name: string; image: string; variant_name: string; size_name: string; qty: number; unit_price_paise: number; warranty: boolean };
+type Pkg = { pkg_length_cm: number | null; pkg_breadth_cm: number | null; pkg_height_cm: number | null; pkg_weight_kg: number | null };
+type Line = { product_name: string; image: string; variant_name: string; size_name: string; qty: number; unit_price_paise: number; warranty: boolean; products: Pkg | null };
 type Order = {
   id: string; code: string; status: string; name: string; phone: string; email: string;
   address: { address: string; city: string; state?: string; pincode: string }; payment_method: string; coupon: string | null;
@@ -20,9 +22,24 @@ type Order = {
 
 const tone = (s: string) => (s === "pending" ? "warn" : s === "cancelled" ? "bad" : "good") as "warn" | "bad" | "good";
 
+const round1 = (n: number) => Math.round(n * 10) / 10;
+
+/** Packed size of the whole order from each product's shipping box: widest footprint, boxes stacked, weights added. */
+function packedBox(lines: Line[]) {
+  if (!lines.length || lines.some((l) => !l.products?.pkg_weight_kg || !l.products.pkg_length_cm || !l.products.pkg_breadth_cm || !l.products.pkg_height_cm)) return null;
+  const n = (v: number | null) => Number(v);
+  return {
+    length: round1(Math.max(...lines.map((l) => n(l.products!.pkg_length_cm)))),
+    breadth: round1(Math.max(...lines.map((l) => n(l.products!.pkg_breadth_cm)))),
+    height: round1(lines.reduce((t, l) => t + n(l.products!.pkg_height_cm) * l.qty, 0)),
+    weight: round1(lines.reduce((t, l) => t + n(l.products!.pkg_weight_kg) * l.qty, 0)),
+  };
+}
+
 /** Send the order to Shiprocket: creates the shipment and gets a courier + AWB. */
 function ShipPanel({ o, onShipped }: { o: Order; onShipped: (patch: Partial<Order>) => void }) {
-  const [box, setBox] = useState({ length: 0, breadth: 0, height: 0, weight: 0, state: o.address.state ?? "" });
+  const auto = packedBox(o.order_lines);
+  const [box, setBox] = useState({ length: 0, breadth: 0, height: 0, weight: 0, ...auto, state: o.address.state ?? "" });
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "error" | "ok"; text: string } | null>(null);
 
@@ -31,7 +48,7 @@ function ShipPanel({ o, onShipped }: { o: Order; onShipped: (patch: Partial<Orde
       <div className="rounded-md border border-border bg-surface p-3 text-sm">
         <p className="flex items-center gap-2 font-semibold"><Truck size={16} className="text-brass" /> Shipped with {o.courier ?? "courier"}</p>
         <p className="mt-1 text-muted">AWB <span className="font-mono text-ink">{o.awb}</span></p>
-        <a href={`https://shiprocket.co/tracking/${encodeURIComponent(o.awb)}`} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-accent underline">Track parcel</a>
+        <a href={trackingUrl(o.awb)} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-accent underline">Track parcel</a>
       </div>
     );
   }
@@ -70,6 +87,9 @@ function ShipPanel({ o, onShipped }: { o: Order; onShipped: (patch: Partial<Orde
       <div className="grid grid-cols-4 gap-2">
         {num("length", "L cm")}{num("breadth", "B cm")}{num("height", "H cm")}{num("weight", "Kg")}
       </div>
+      <p className="mt-1 text-xs text-muted">
+        {auto ? "Filled from each product's shipping box. Change it if you packed differently." : "Some products here have no shipping box size yet. Add it in Products so this fills itself next time."}
+      </p>
       {!o.address.state && (
         <Field label="Customer's state" className="mt-2">
           <select value={box.state} onChange={(e) => setBox({ ...box, state: e.target.value })} className={`${inputCls} h-9`}>
@@ -96,11 +116,11 @@ function Orders() {
   useEffect(() => {
     let q = browserClient()
       .from("orders")
-      .select("id, code, status, name, phone, email, address, payment_method, coupon, subtotal_paise, bundle_paise, coupon_paise, total_paise, created_at, user_id, awb, courier, shipment_id, order_lines(product_name, image, variant_name, size_name, qty, unit_price_paise, warranty)")
+      .select("id, code, status, name, phone, email, address, payment_method, coupon, subtotal_paise, bundle_paise, coupon_paise, total_paise, created_at, user_id, awb, courier, shipment_id, order_lines(product_name, image, variant_name, size_name, qty, unit_price_paise, warranty, products(pkg_length_cm, pkg_breadth_cm, pkg_height_cm, pkg_weight_kg))")
       .order("created_at", { ascending: false })
       .limit(200);
     if (status) q = q.eq("status", status);
-    q.then(({ data, error }) => (error ? setError(error.message) : setOrders(data as Order[])));
+    q.then(({ data, error }) => (error ? setError(error.message) : setOrders(data as unknown as Order[])));
   }, [status]);
 
   const setStatus = async (o: Order, next: string) => {
