@@ -4,8 +4,14 @@ import kvIncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cac
 import kvNextTagCache from "@opennextjs/cloudflare/overrides/tag-cache/kv-next-tag-cache";
 import memoryQueue from "@opennextjs/cloudflare/overrides/queue/memory-queue";
 
+// Same KV cache, under a name the deploy step doesn't recognise, so deploys don't pre-fill ~185 pages into KV.
+// The free plan allows 1,000 KV writes a day; pre-filling on every deploy used them up. Pages are saved on first visit instead.
+const lazyKvIncrementalCache = Object.create(kvIncrementalCache, {
+  name: { value: "kv-incremental-cache-lazy" },
+}) as typeof kvIncrementalCache;
+
 export default defineCloudflareConfig({
-  incrementalCache: kvIncrementalCache,
+  incrementalCache: lazyKvIncrementalCache,
   tagCache: kvNextTagCache,
   queue: memoryQueue,
 });
