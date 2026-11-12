@@ -6,7 +6,7 @@ import { getCategories, getCategory, productsIn } from "@/lib/db";
 import { Breadcrumb } from "@/components/ui";
 import Listing from "@/components/Listing";
 
-export const revalidate = 300;
+export const revalidate = 21600; // 6 h; admin edits refresh pages at once via /api/revalidate
 
 export async function generateStaticParams() {
   return (await getCategories()).map((c) => ({ slug: c.slug }));

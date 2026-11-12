@@ -6,12 +6,16 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "build:cf": "opennextjs-cloudflare build",
+    "preview:cf": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy:cf": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
+    "@opennextjs/cloudflare": "^1.20.17",
     "@supabase/supabase-js": "^2.109.0",
     "lucide-react": "^1.66.0",
-    "next": "15.5.28",
+    "next": "15.5.29",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "server-only": "^0.0.1"
@@ -23,8 +27,9 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.5.28",
+    "eslint-config-next": "15.5.29",
     "tailwindcss": "^4.1.11",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.161.0"
   }
 }
