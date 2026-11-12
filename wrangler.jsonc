@@ -13,12 +13,13 @@
     { "binding": "WORKER_SELF_REFERENCE", "service": "airawat" }
   ],
   "kv_namespaces": [
-    // Cached pages and their revalidation tags. Fill in the ids after `wrangler kv namespace create`.
-    { "binding": "NEXT_INC_CACHE_KV", "id": "REPLACE_INC_CACHE_ID" },
-    { "binding": "NEXT_TAG_CACHE_KV", "id": "REPLACE_TAG_CACHE_ID" }
+    // Cached pages and their revalidation tags. KV stores airawat-page-cache and airawat-tag-cache.
+    { "binding": "NEXT_INC_CACHE_KV", "id": "944ad486c49d48019134ce0b6968ee1f" },
+    { "binding": "NEXT_TAG_CACHE_KV", "id": "be29fb6a5944409cb64fb0e405919d11" }
   ],
   "vars": {
-    "SHIPROCKET_PICKUP_LOCATION": "work"
+    "SHIPROCKET_PICKUP_LOCATION": "work",
+    "SHIPROCKET_EMAIL": "workblinksai@gmail.com"
   },
   "observability": { "enabled": true }
 }

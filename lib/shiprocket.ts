@@ -1,12 +1,24 @@
 // Shiprocket API (server only). Off until SHIPROCKET_EMAIL and SHIPROCKET_PASSWORD are set.
 // These are an API user's details (Shiprocket → Settings → API → Configure), not the panel login.
 import "server-only";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 const BASE = "https://apiv2.shiprocket.in/v1/external";
 
-export const shiprocketConfigured = () => !!(process.env.SHIPROCKET_EMAIL && process.env.SHIPROCKET_PASSWORD);
-export const pickupPincode = () => process.env.SHIPROCKET_PICKUP_PINCODE || "411045";
-export const pickupLocation = () => process.env.SHIPROCKET_PICKUP_LOCATION || "Primary";
+// On Cloudflare, secrets arrive on the worker's env but not always on process.env, so check both.
+function setting(key: string): string | undefined {
+  if (process.env[key]) return process.env[key];
+  try {
+    const v = (getCloudflareContext().env as unknown as Record<string, unknown>)[key];
+    return typeof v === "string" && v ? v : undefined;
+  } catch {
+    return undefined; // not running on Cloudflare (e.g. next dev)
+  }
+}
+
+export const shiprocketConfigured = () => !!(setting("SHIPROCKET_EMAIL") && setting("SHIPROCKET_PASSWORD"));
+export const pickupPincode = () => setting("SHIPROCKET_PICKUP_PINCODE") || "411045";
+export const pickupLocation = () => setting("SHIPROCKET_PICKUP_LOCATION") || "Primary";
 
 export class ShiprocketError extends Error {
   constructor(message: string, public status = 502) {
@@ -23,7 +35,7 @@ async function getToken() {
   const res = await fetch(`${BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: process.env.SHIPROCKET_EMAIL, password: process.env.SHIPROCKET_PASSWORD }),
+    body: JSON.stringify({ email: setting("SHIPROCKET_EMAIL"), password: setting("SHIPROCKET_PASSWORD") }),
     cache: "no-store",
   });
   const data = (await res.json().catch(() => ({}))) as { token?: string; message?: string };
