@@ -21,6 +21,8 @@
     "SHIPROCKET_PICKUP_LOCATION": "work",
     "SHIPROCKET_EMAIL": "workblinksai@gmail.com"
   },
+  // Keep the free *.workers.dev address on alongside the custom domain.
+  "workers_dev": true,
   "routes": [
     { "pattern": "airawathandicraft.com", "custom_domain": true },
     { "pattern": "www.airawathandicraft.com", "custom_domain": true }
