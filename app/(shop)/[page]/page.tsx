@@ -23,7 +23,8 @@ const pages: Record<string, { title: string; body: React.ReactNode }> = {
   },
 };
 
-export const dynamicParams = false;
+// Rendered on first visit (unknown names fall through to notFound below), so deploys need no pre-filled page cache.
+export const dynamicParams = true;
 export function generateStaticParams() {
   return Object.keys(pages).map((page) => ({ page }));
 }
