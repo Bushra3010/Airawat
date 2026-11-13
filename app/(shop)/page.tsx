@@ -22,7 +22,7 @@ const voices = [
   { name: "Sana, Lucknow", text: "I sent fabric photos back and forth with their stylist for a week. Worth it, the sofa is perfect." },
 ];
 
-export const revalidate = 21600; // 6 h; admin edits refresh pages at once via /api/revalidate
+export const revalidate = false; // built once per deploy; admin edits trigger a rebuild (see /api/revalidate)
 
 const TABS = [
   { label: "All", slug: undefined },

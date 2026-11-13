@@ -6,7 +6,7 @@ import BuyBox from "@/components/BuyBox";
 import Gallery from "@/components/Gallery";
 import InfoTabs from "@/components/InfoTabs";
 
-export const revalidate = 21600; // 6 h; admin edits refresh pages at once via /api/revalidate
+export const revalidate = false; // built once per deploy; admin edits trigger a rebuild (see /api/revalidate)
 
 export async function generateStaticParams() {
   return (await allProductSlugs()).map((slug) => ({ slug }));

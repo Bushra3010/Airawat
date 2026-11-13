@@ -1,7 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
-import { revalidatePath } from "next/cache";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-// Rebuild the shop's cached pages after an admin edit. Only signed-in admins may trigger it.
+// Publish admin edits to the shop. Shop pages are built once per deploy, so this starts a fresh build
+// through a Cloudflare Workers Builds deploy hook (secret DEPLOY_HOOK_URL). Live in about 5 minutes.
+// Only signed-in admins may trigger it.
+function deployHookUrl(): string | undefined {
+  if (process.env.DEPLOY_HOOK_URL) return process.env.DEPLOY_HOOK_URL;
+  try {
+    const v = (getCloudflareContext().env as unknown as Record<string, unknown>).DEPLOY_HOOK_URL;
+    return typeof v === "string" && v ? v : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function POST(req: Request) {
   const token = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
   if (!token) return Response.json({ error: "Sign in first." }, { status: 401 });
@@ -13,6 +25,9 @@ export async function POST(req: Request) {
   const { data: isAdmin, error } = await sb.rpc("is_admin");
   if (error || !isAdmin) return Response.json({ error: "Not allowed." }, { status: 403 });
 
-  revalidatePath("/", "layout");
+  const hook = deployHookUrl();
+  if (!hook) return Response.json({ error: "Publishing isn't set up yet (DEPLOY_HOOK_URL missing)." }, { status: 503 });
+  const res = await fetch(hook, { method: "POST" });
+  if (!res.ok) return Response.json({ error: `Cloudflare didn't start the update (${res.status}).` }, { status: 502 });
   return Response.json({ ok: true });
 }

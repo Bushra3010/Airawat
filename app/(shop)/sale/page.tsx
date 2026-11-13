@@ -3,7 +3,7 @@ import { discount } from "@/lib/catalog";
 import { allProductSlugs, productsBySlugs } from "@/lib/db";
 import { Breadcrumb, Countdown, ProductGrid } from "@/components/ui";
 
-export const revalidate = 21600; // 6 h; admin edits refresh pages at once via /api/revalidate
+export const revalidate = false; // built once per deploy; admin edits trigger a rebuild (see /api/revalidate)
 export const metadata: Metadata = {
   title: "Festive Sale",
   description: "Festive Sale on wood-carved furniture: deals of the week plus big savings on sofas, beds, dining sets and more.",

@@ -2,7 +2,7 @@ import { allProductSlugs, getCategories, productsBySlugs } from "@/lib/db";
 import type { SearchIndex } from "@/lib/search-suggest";
 
 // Small catalogue snapshot for search suggestions. Rebuilt at most every 5 minutes.
-export const revalidate = 21600; // 6 h; admin edits refresh pages at once via /api/revalidate
+export const revalidate = false; // built once per deploy; admin edits trigger a rebuild (see /api/revalidate)
 
 export async function GET() {
   const [categories, products] = await Promise.all([getCategories(), allProductSlugs().then(productsBySlugs)]);

@@ -32,7 +32,7 @@ function CategoryCard({ c, onSaved, onDeleted }: { c: Cat; onSaved: (c: Cat) => 
     }
     const refreshed = await refreshSite();
     setBusy(false);
-    setMsg({ kind: "ok", text: refreshed ? "Saved. The shop is updated." : "Saved." });
+    setMsg({ kind: "ok", text: refreshed ? "Saved. The shop will show this in about 5 minutes." : "Saved, but the shop update didn't start. Save again to retry." });
     onSaved({ ...row });
   };
 

@@ -1,17 +1,11 @@
-// Cloudflare (OpenNext) settings. Cached shop pages live in Workers KV, which the free plan includes.
+// Cloudflare (OpenNext) settings.
+// Shop pages are built once per deploy and served from Workers static assets: free, unlimited and no KV.
+// (A KV page cache used up the free plan's 100,000 daily KV reads.) Admin edits reach the shop by
+// triggering a rebuild through a Cloudflare deploy hook; see app/api/revalidate/route.ts.
 import { defineCloudflareConfig } from "@opennextjs/cloudflare";
-import kvIncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cache/kv-incremental-cache";
-import kvNextTagCache from "@opennextjs/cloudflare/overrides/tag-cache/kv-next-tag-cache";
-import memoryQueue from "@opennextjs/cloudflare/overrides/queue/memory-queue";
-
-// Same KV cache, under a name the deploy step doesn't recognise, so deploys don't pre-fill ~185 pages into KV.
-// The free plan allows 1,000 KV writes a day; pre-filling on every deploy used them up. Pages are saved on first visit instead.
-const lazyKvIncrementalCache = Object.create(kvIncrementalCache, {
-  name: { value: "kv-incremental-cache-lazy" },
-}) as typeof kvIncrementalCache;
+import staticAssetsIncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cache/static-assets-incremental-cache";
 
 export default defineCloudflareConfig({
-  incrementalCache: lazyKvIncrementalCache,
-  tagCache: kvNextTagCache,
-  queue: memoryQueue,
+  incrementalCache: staticAssetsIncrementalCache,
+  enableCacheInterception: true,
 });

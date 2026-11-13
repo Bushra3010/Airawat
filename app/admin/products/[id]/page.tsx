@@ -116,7 +116,7 @@ export default function ProductEditor({ params }: { params: Promise<{ id: string
     }
     const refreshed = await refreshSite();
     setBusy(false);
-    setMsg({ kind: "ok", text: refreshed ? "Saved. The shop is updated." : "Saved, but the shop didn't refresh. Save again to retry; otherwise it updates within 6 hours." });
+    setMsg({ kind: "ok", text: refreshed ? "Saved. The shop will show this in about 5 minutes." : "Saved, but the shop update didn't start. Save again to retry." });
     if (isNew) router.replace(`/admin/products/${data}`);
     else setF({ ...f, id: data as string });
   };
