@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/AppLink";
 import { use, useEffect, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { formatINR, img } from "@/lib/catalog";

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/AppLink";
 import { Globe, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import type { Category } from "@/lib/catalog";
 import { BUSINESS } from "@/lib/business";

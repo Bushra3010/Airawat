@@ -1,5 +1,5 @@
 // Small building blocks shared by the admin pages.
-import Link from "next/link";
+import Link from "@/components/AppLink";
 
 export const inputCls = "h-10 w-full rounded-md border border-border-input bg-surface px-3 text-sm focus:border-accent focus:outline-none";
 

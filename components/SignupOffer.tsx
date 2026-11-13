@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/AppLink";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Check, Copy, Gift, X } from "lucide-react";

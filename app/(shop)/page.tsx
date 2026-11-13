@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/AppLink";
 import { ArrowRight, Hammer, MapPin, MessageCircle, Phone, Ruler } from "lucide-react";
 import { BUSINESS } from "@/lib/business";
 import { discount, img } from "@/lib/catalog";

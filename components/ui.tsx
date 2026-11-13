@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/AppLink";
 import { useEffect, useState } from "react";
 import { Heart, Star, Truck } from "lucide-react";
 import { discount, formatINR, img, type Product } from "@/lib/catalog";

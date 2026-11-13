@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/AppLink";
 import { ArrowRight } from "lucide-react";
 import { BUSINESS } from "@/lib/business";
 import { img, type Product } from "@/lib/catalog";

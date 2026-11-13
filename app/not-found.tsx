@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/AppLink";
 import { img } from "@/lib/catalog";
 import { getCategories } from "@/lib/db";
 import Header from "@/components/Header";
